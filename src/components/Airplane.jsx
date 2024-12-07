@@ -20,8 +20,12 @@ export function Airplane(props) {
 
   return (
     <group {...props} dispose={null}>
-        <mesh geometry={nodes.Plane.geometry} material={materials.plane} rotation={[Math.PI / 2, 0, 0]} />
-        <mesh ref={helix} geometry={nodes.Helix.geometry} material={materials.plane} rotation={[Math.PI / 3, 0, 0]} position = {[0,0,.1]} />
+        <mesh geometry={nodes.Plane.geometry} material={materials.plane} rotation={[Math.PI / 2, 0, 0]}> 
+        <meshStandardMaterial color={"white"}/>
+        </mesh>
+        <mesh ref={helix} geometry={nodes.Helix.geometry} rotation={[Math.PI / 3, 0, 0]} position = {[0,0,.1]}>
+        <meshStandardMaterial color={"white"}/>
+        </mesh>
     </group>
   )
 }
