@@ -13,6 +13,7 @@ const CURVE_DISTANCE = 250;
 const CURVE_AHEAD_CAMERA = 0.008;
 const CURVE_AHEAD_AIRPLANE = 0.02;
 const AIRPLANE_MAX_ANGLE = 35;
+const FRICTION_DISTANCE = 42;
 
 const links = {
   welcome: "https://youtube.com/"
@@ -40,6 +41,7 @@ export const Experience = () => {
 
   const textSections = useMemo(()=>{
     return[{
+      cameraRailDist: -1,
       position: new THREE.Vector3(
         curvePoints[1].x - 3,
         curvePoints[1].y,
@@ -50,6 +52,7 @@ export const Experience = () => {
       subtitle: 'to CodeMaps, Your personalised roadmap for coding',
   },
   {
+      cameraRailDist: 1.5,
       position: new THREE.Vector3(
         curvePoints[2].x + 4,
         curvePoints[2].y,
@@ -59,6 +62,7 @@ export const Experience = () => {
       subtitle: 'is an art form, a passion, and a creative outlet',
   },
   {
+    cameraRailDist: -1,
     position: new THREE.Vector3(
       curvePoints[3].x - 4,
       curvePoints[3].y,
@@ -69,6 +73,131 @@ export const Experience = () => {
   }
 ];
 },[]);
+
+
+  const clouds = useMemo(()=>[
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x - 10,
+        curvePoints[1].y ,
+        curvePoints[1].z + 220
+      ),
+      scale: new THREE.Vector3(1,1.2,2),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x + 4,
+        curvePoints[1].y - 4 ,
+        curvePoints[1].z + 235
+      ),
+      scale: new THREE.Vector3(1.2,1.2,1),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x + 4,
+        curvePoints[1].y - 2 ,
+        curvePoints[1].z 
+      ),
+      scale: new THREE.Vector3(2,2,1),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x - 10,
+        curvePoints[1].y - 2 ,
+        curvePoints[1].z + 235
+      ),
+      scale: new THREE.Vector3(1.2,1.2,1),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x + 12,
+        curvePoints[1].y ,
+        curvePoints[1].z + 220
+      ),
+      scale: new THREE.Vector3(1.7,1.2,2),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[2].x + 10,
+        curvePoints[2].y + 10,
+        curvePoints[2].z
+      ),
+      scale: new THREE.Vector3(0.5,1,0.7)
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[3].x + 20,
+        curvePoints[3].y + 5,
+        curvePoints[3].z -2
+      ),
+      scale: new THREE.Vector3(0.7,0.7,0.7)
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[3].x - 20,
+        curvePoints[3].y - 5,
+        curvePoints[3].z -2
+      ),
+      scale: new THREE.Vector3(0.7,0.7,0.7)
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[4].x + 10,
+        curvePoints[4].y + 10,
+        curvePoints[4].z
+      ),
+      scale: new THREE.Vector3(0.5,1,0.7)
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[4].x - 10,
+        curvePoints[4].y + 10,
+        curvePoints[4].z
+      ),
+      scale: new THREE.Vector3(0.5,1,0.7)
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[5].x + 10,
+        curvePoints[5].y + 10,
+        curvePoints[5].z
+      ),
+      scale: new THREE.Vector3(0.5,1,0.7),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[5].x - 10,
+        curvePoints[5].y + 10,
+        curvePoints[5].z
+      ),
+      scale: new THREE.Vector3(0.5,1,0.7)
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[6].x + 10,
+        curvePoints[6].y + 10,
+        curvePoints[6].z
+      ),
+      scale: new THREE.Vector3(0.5,1,0.7)
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[6].x - 10,
+        curvePoints[6].y + 10,
+        curvePoints[6].z
+      ),
+      scale: new THREE.Vector3(0.5,1,0.7)
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[7].x + 10,
+        curvePoints[7].y + 10,
+        curvePoints[7].z
+      ),
+      scale: new THREE.Vector3(0.5,1,0.7)
+    }
+  ],
+  []);
 
   const shape = useMemo(()=>
   {
@@ -84,6 +213,7 @@ export const Experience = () => {
   },[curve])
 
   const cameraGroup = useRef();
+  const cameraRail = useRef();
   const scroll = useScroll();
 
   useFrame((_state, delta) => {
@@ -95,6 +225,24 @@ export const Experience = () => {
     const lookAtpoint = curve.getPoint(
       Math.min(scrollOffset + CURVE_AHEAD_CAMERA, 1)
     );
+
+    let resetCameraRail = true;
+    textSections.forEach((TextSection)=>{
+      const distance = TextSection.position.distanceTo(cameraGroup.current.position);
+      if(distance < FRICTION_DISTANCE){
+        const targetCameraRailPosition = new THREE.Vector3(
+          (1 - distance / FRICTION_DISTANCE) * TextSection.cameraRailDist,
+          0,
+          0,
+        );
+        cameraRail.current.position.lerp(targetCameraRailPosition, delta);
+        resetCameraRail = false;
+      }
+    });
+    if(resetCameraRail){
+      const targetCameraRailPosition = new THREE.Vector3(0,0,0);
+      cameraRail.current.position.lerp(targetCameraRailPosition, delta);
+    }
 
     //Following the points
     cameraGroup.current.position.lerp(curPoint, delta*24)
@@ -164,7 +312,9 @@ export const Experience = () => {
       {/*<OrbitControls/>*/}
       <group ref={cameraGroup}>
       <Background/>
+      <group ref={cameraRail}>
       <PerspectiveCamera position={[0,0,5]} fov={30} makeDefault={true}/>
+      </group>
 
       <group ref = {airplane}>
         <Float floatIntensity={1} speed={1.5} rotationIntensity={0.5}>
@@ -184,15 +334,11 @@ export const Experience = () => {
 
 
     {/*Clouds*/}
-    <Clouds scale={[.6,.6,1]} position={[-7,-1.2,-7]}/>
-    <Clouds scale={[.4,.4,.6]} position={[3.5,-1,-10]} rotation-y={Math.PI} />
-    <Clouds scale={[.4,.4,.4]} position={[-3.5,0.2,-12]} rotation-y={Math.PI/3}/>
-
-    <Clouds scale={[.6,.6,.6]} position={[3.5,0.2,-12]} />
-
-    <Clouds scale={[0.4,0.4,0.4]} rotation-y={Math.PI/9} position={[1,-0.2,-12]}/>
-    <Clouds scale={[0.3,0.3,.3]} position={[-4,-0.5,-53]}/>
-
+    {
+      clouds.map((clouds, index) => (
+        <Clouds {...clouds} key={index} />
+      ))
+    }
 
     <group position-y={-3}>
       {/*<Line
