@@ -1,20 +1,25 @@
-import { Canvas } from "@react-three/fiber";
-import { Experience } from "./components/Experience.jsx";
 import { ScrollControls } from "@react-three/drei";
-import { EffectComposer } from "@react-three/postprocessing";
-import { Noise } from "lamina";
+import { Canvas } from "@react-three/fiber";
+import { EffectComposer, Noise } from "@react-three/postprocessing";
+import { Experience } from "./components/Experience";
+import { Overlay } from "./components/Overlay";
+import { usePlay } from "./contexts/Play";
+
+
 function App() {
+const {play, end} = usePlay();
+
   return (
     <>
       <Canvas>
-        <color attach="background" args={["#c1c1c1"]} />
-        <ScrollControls pages={100} damping={1}>
+        <ScrollControls pages={play && !end ? 20 : 0} damping={0.5}>
           <Experience />
         </ScrollControls>
         <EffectComposer>
-          <Noise opacity={0.5} />
+          <Noise opacity={0.22} />
         </EffectComposer>
       </Canvas>
+      <Overlay/>
     </>
   );
 }

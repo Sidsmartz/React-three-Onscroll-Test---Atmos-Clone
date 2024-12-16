@@ -2,11 +2,13 @@ import { Float, OrbitControls, PerspectiveCamera, Text, useScroll } from "@react
 import { Background } from "./Background";
 import { Airplane } from "./Airplane";
 import { Clouds } from "./Clouds";
-import { useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from 'three';
-import { Line } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { TextSection } from "./TextSection";
+import { fadeOnBeforeCompile } from "../utils/fadeMaterial";
+import { usePlay } from "../contexts/Play";
+import gsap from "gsap";
 
 const LINE_NB_POINTS = 1000;
 const CURVE_DISTANCE = 250;
@@ -35,16 +37,19 @@ export const Experience = () => {
       []
     );
 
+  const sceneOpacity = useRef(0);
+  const lineMaterialRef = useRef();
+
   const curve = useMemo(()=>{
     return new THREE.CatmullRomCurve3(curvePoints,false,"catmullrom",0.5);
   },[]);
 
   const textSections = useMemo(()=>{
     return[{
-      cameraRailDist: -1,
+      cameraRailDist: -3,
       position: new THREE.Vector3(
-        curvePoints[1].x - 3,
-        curvePoints[1].y,
+        curvePoints[1].x - 4,
+        curvePoints[1].y + 1,
         curvePoints[1].z
       ),
       linkKey: "welcome",
@@ -52,7 +57,7 @@ export const Experience = () => {
       subtitle: 'to CodeMaps, Your personalised roadmap for coding',
   },
   {
-      cameraRailDist: 1.5,
+      cameraRailDist: 4,
       position: new THREE.Vector3(
         curvePoints[2].x + 4,
         curvePoints[2].y,
@@ -62,7 +67,7 @@ export const Experience = () => {
       subtitle: 'is an art form, a passion, and a creative outlet',
   },
   {
-    cameraRailDist: -1,
+    cameraRailDist: -7,
     position: new THREE.Vector3(
       curvePoints[3].x - 4,
       curvePoints[3].y,
@@ -96,106 +101,242 @@ export const Experience = () => {
       position: new THREE.Vector3(
         curvePoints[1].x + 4,
         curvePoints[1].y - 2 ,
-        curvePoints[1].z 
+        curvePoints[1].z + 220
       ),
       scale: new THREE.Vector3(2,2,1),
     },
     {
       position: new THREE.Vector3(
         curvePoints[1].x - 10,
-        curvePoints[1].y - 2 ,
+        curvePoints[1].y - 4 ,
         curvePoints[1].z + 235
       ),
       scale: new THREE.Vector3(1.2,1.2,1),
     },
     {
       position: new THREE.Vector3(
-        curvePoints[1].x + 12,
-        curvePoints[1].y ,
+        curvePoints[1].x + 9,
+        curvePoints[1].y + 5,
         curvePoints[1].z + 220
       ),
-      scale: new THREE.Vector3(1.7,1.2,2),
+      scale: new THREE.Vector3(1.7,1.5,2),
     },
     {
       position: new THREE.Vector3(
-        curvePoints[2].x + 10,
-        curvePoints[2].y + 10,
-        curvePoints[2].z
+        curvePoints[1].x - 20,
+        curvePoints[1].y + 4,
+        curvePoints[1].z + 215
       ),
-      scale: new THREE.Vector3(0.5,1,0.7)
+      scale: new THREE.Vector3(1.7,1.8,2),
     },
     {
       position: new THREE.Vector3(
-        curvePoints[3].x + 20,
-        curvePoints[3].y + 5,
-        curvePoints[3].z -2
+        curvePoints[1].x + 15,
+        curvePoints[1].y - 3,
+        curvePoints[1].z + 190
       ),
-      scale: new THREE.Vector3(0.7,0.7,0.7)
+      scale: new THREE.Vector3(1.5,1.7,2),
     },
     {
       position: new THREE.Vector3(
-        curvePoints[3].x - 20,
-        curvePoints[3].y - 5,
-        curvePoints[3].z -2
+        curvePoints[1].x - 15,
+        curvePoints[1].y - 5,
+        curvePoints[1].z + 150
       ),
-      scale: new THREE.Vector3(0.7,0.7,0.7)
+      scale: new THREE.Vector3(1.5,1.7,2),
     },
     {
       position: new THREE.Vector3(
-        curvePoints[4].x + 10,
-        curvePoints[4].y + 10,
-        curvePoints[4].z
+        curvePoints[1].x - 10,
+        curvePoints[1].y + 6,
+        curvePoints[1].z + 160
       ),
-      scale: new THREE.Vector3(0.5,1,0.7)
+      scale: new THREE.Vector3(1.5,1.7,2),
     },
     {
       position: new THREE.Vector3(
-        curvePoints[4].x - 10,
-        curvePoints[4].y + 10,
-        curvePoints[4].z
+        curvePoints[1].x + 10,
+        curvePoints[1].y + 6,
+        curvePoints[1].z + 170
       ),
-      scale: new THREE.Vector3(0.5,1,0.7)
+      scale: new THREE.Vector3(1.5,1.7,2),
     },
     {
       position: new THREE.Vector3(
-        curvePoints[5].x + 10,
-        curvePoints[5].y + 10,
-        curvePoints[5].z
+        curvePoints[1].x - 18,
+        curvePoints[1].y,
+        curvePoints[1].z + 185
       ),
-      scale: new THREE.Vector3(0.5,1,0.7),
+      scale: new THREE.Vector3(1.5,1.7,2),
     },
     {
       position: new THREE.Vector3(
-        curvePoints[5].x - 10,
-        curvePoints[5].y + 10,
-        curvePoints[5].z
+        curvePoints[1].x + 12,
+        curvePoints[1].y,
+        curvePoints[1].z + 185
       ),
-      scale: new THREE.Vector3(0.5,1,0.7)
+      scale: new THREE.Vector3(1.5,1.7,2),
     },
     {
       position: new THREE.Vector3(
-        curvePoints[6].x + 10,
-        curvePoints[6].y + 10,
-        curvePoints[6].z
+        curvePoints[1].x + 4,
+        curvePoints[1].y,
+        curvePoints[1].z + 170
       ),
-      scale: new THREE.Vector3(0.5,1,0.7)
+      scale: new THREE.Vector3(1.5,1.7,2),
     },
     {
       position: new THREE.Vector3(
-        curvePoints[6].x - 10,
-        curvePoints[6].y + 10,
-        curvePoints[6].z
+        curvePoints[1].x - 4,
+        curvePoints[1].y,
+        curvePoints[1].z + 120
       ),
-      scale: new THREE.Vector3(0.5,1,0.7)
+      scale: new THREE.Vector3(1.5,1.7,2),
     },
     {
       position: new THREE.Vector3(
-        curvePoints[7].x + 10,
-        curvePoints[7].y + 10,
-        curvePoints[7].z
+        curvePoints[1].x - 20,
+        curvePoints[1].y,
+        curvePoints[1].z + 100
       ),
-      scale: new THREE.Vector3(0.5,1,0.7)
-    }
+      scale: new THREE.Vector3(1.2,1.2,1.8),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x + 1,
+        curvePoints[1].y,
+        curvePoints[1].z + 100
+      ),
+      scale: new THREE.Vector3(1.2,1.2,1.8),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x - 15,
+        curvePoints[1].y,
+        curvePoints[1].z + 75
+      ),
+      scale: new THREE.Vector3(1.2,1.2,1.8),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x + 2,
+        curvePoints[1].y,
+        curvePoints[1].z + 50
+      ),
+      scale: new THREE.Vector3(1.2,1.2,1.8),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x + 2,
+        curvePoints[1].y,
+        curvePoints[1].z + 20
+      ),
+      scale: new THREE.Vector3(1.2,1.2,1.8),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x - 2,
+        curvePoints[1].y + 4,
+        curvePoints[1].z + 10
+      ),
+      scale: new THREE.Vector3(1.2,1.2,1.8),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x - 12,
+        curvePoints[1].y - 4,
+        curvePoints[1].z - 20
+      ),
+      scale: new THREE.Vector3(1.2,1.2,1.8),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x + 12,
+        curvePoints[1].y - 4,
+        curvePoints[1].z - 30
+      ),
+      scale: new THREE.Vector3(1.2,1.2,1.8),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x + 2,
+        curvePoints[1].y + 4,
+        curvePoints[1].z - 45
+      ),
+      scale: new THREE.Vector3(1.2,1.2,1.8),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x + 20,
+        curvePoints[1].y - 4,
+        curvePoints[1].z - 80
+      ),
+      scale: new THREE.Vector3(1.2,1.2,1.8),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x + 75,
+        curvePoints[1].y - 4,
+        curvePoints[1].z - 130
+      ),
+      scale: new THREE.Vector3(1.2,1.2,1.8),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x + 60,
+        curvePoints[1].y + 4,
+        curvePoints[1].z - 105
+      ),
+      scale: new THREE.Vector3(1.2,1.2,1.8),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x + 90,
+        curvePoints[1].y - 4,
+        curvePoints[1].z - 130
+      ),
+      scale: new THREE.Vector3(1.2,1.2,1.8),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x + 40,
+        curvePoints[1].y + 4,
+        curvePoints[1].z - 140
+      ),
+      scale: new THREE.Vector3(1.2,1.2,1.8),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x + 60,
+        curvePoints[1].y - 4,
+        curvePoints[1].z - 170
+      ),
+      scale: new THREE.Vector3(1.2,1.2,1.8),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x + 70,
+        curvePoints[1].y + 4,
+        curvePoints[1].z - 170
+      ),
+      scale: new THREE.Vector3(1.2,1.2,1.8),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x + 112,
+        curvePoints[1].y - 4,
+        curvePoints[1].z - 220
+      ),
+      scale: new THREE.Vector3(1.2,1.2,1.8),
+    },
+    {
+      position: new THREE.Vector3(
+        curvePoints[1].x + 120,
+        curvePoints[1].y - 4,
+        curvePoints[1].z - 250
+      ),
+      scale: new THREE.Vector3(1.2,1.2,1.8),
+    },
   ],
   []);
 
@@ -208,18 +349,39 @@ export const Experience = () => {
     return shape;
   })
 
-  const linePoints = useMemo(()=>{
-    return curve.getPoints(LINE_NB_POINTS);
-  },[curve])
 
   const cameraGroup = useRef();
   const cameraRail = useRef();
   const scroll = useScroll();
+  const camera = useRef();
+
+  const {play , end, setEnd} = usePlay();
 
   useFrame((_state, delta) => {
 
-    const scrollOffset = Math.max(0,scroll.offset);
+    if(window.innerWidth > window.innerHeight) {
+      camera.current.fov = 30;
+      camera.current.position.z = 5;
+    }else{
+      camera.current.fov = 0;
+      camera.current.position.z = 2;
+    }
 
+    lineMaterialRef.current.opacity = sceneOpacity.current;
+
+    if (play && !end && sceneOpacity.current < 1){
+      sceneOpacity.current = THREE.MathUtils.lerp(sceneOpacity.current,1,delta * 0.2);
+    }
+
+    if (end && sceneOpacity.current > 0){
+      sceneOpacity.current = THREE.MathUtils.lerp(sceneOpacity.current,0,delta * 0.5);
+    }
+
+    if (end){
+      return;
+    }
+
+    const scrollOffset = Math.max(0,scroll.offset);
     const curPoint = curve.getPoint(scrollOffset);
 
     const lookAtpoint = curve.getPoint(
@@ -296,6 +458,13 @@ export const Experience = () => {
 
     airplane.current.quaternion.slerp(targetAirplaneQuaternion, delta*2);
 
+    if (cameraGroup.current.position.z < curvePoints[curvePoints.length - 1].z + 100) {
+      console.log("End condition met");
+      setEnd(true);
+      planeOutTl.current?.play();
+    }
+    
+
   });
   
   const onClickHandle = () => {
@@ -303,6 +472,52 @@ export const Experience = () => {
   };
 
   const airplane = useRef();
+  
+  const planeInTl = useRef();
+  const planeOutTl = useRef();
+
+  useLayoutEffect(() => {
+    if (!airplane.current || !cameraRail.current) return;
+  
+    planeInTl.current = gsap.timeline({ paused: true });
+    planeInTl.current.from(airplane.current.position, {
+      duration: 3,
+      z: 5,
+      y: -2,
+    });
+  
+    planeOutTl.current = gsap.timeline({ paused: true });
+    planeOutTl.current
+      .to(
+        airplane.current.position,
+        {
+          duration: 10,
+          z: -250,
+          y: 10,
+        },
+        0
+      )
+      .to(
+        cameraRail.current.position,
+        {
+          duration: 8,
+          y: 12,
+        },
+        0
+      )
+      .to(airplane.current.position, {
+        duration: 1,
+        z: -1000,
+      });
+  }, []);
+  
+
+  useEffect(() => {
+    if(play){
+      planeInTl.current.play();
+    }
+
+  }, );
 
   return (
     <>
@@ -313,7 +528,7 @@ export const Experience = () => {
       <group ref={cameraGroup}>
       <Background/>
       <group ref={cameraRail}>
-      <PerspectiveCamera position={[0,0,5]} fov={30} makeDefault={true}/>
+      <PerspectiveCamera ref={camera} position={[0,0,5]} fov={30} makeDefault={true}/>
       </group>
 
       <group ref = {airplane}>
@@ -336,33 +551,26 @@ export const Experience = () => {
     {/*Clouds*/}
     {
       clouds.map((clouds, index) => (
-        <Clouds {...clouds} key={index} />
+        <Clouds sceneOpacity={sceneOpacity} {...clouds} key={index} />
       ))
     }
 
-    <group position-y={-3}>
-      {/*<Line
-      points={linePoints}
-      color={"white"}
-      opacity={0.7}
-      transparent
-      linewidth={16}
-      />*/}
-
-        <mesh>
-          <extrudeGeometry 
-          args={[
-            shape,
-          {
-            steps: LINE_NB_POINTS,
-            bevelEnabled: false,
-            extrudePath : curve,
-          },]} />
+<group position-y={-3}>
+  <mesh>
+    <extrudeGeometry 
+      args={[
+        shape, 
+        {
+          steps: LINE_NB_POINTS,
+          bevelEnabled: false,
+          extrudePath: curve,
         }
-        <meshStandardMaterial color={"white"} transparent envMapIntensity={2}/>
-        </mesh>
+      ]}
+    />
+    <meshStandardMaterial ref={lineMaterialRef} color={"white"} onBeforeCompile={fadeOnBeforeCompile} />
+  </mesh>
+</group>
 
-      </group>  
     </>
   );
 };
